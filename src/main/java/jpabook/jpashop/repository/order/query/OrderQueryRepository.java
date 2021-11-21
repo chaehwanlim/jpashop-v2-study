@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -21,10 +23,34 @@ public class OrderQueryRepository {
         });
 
         /*
+         * 루프도 돌고
          * 결국 N+1 문제 발생
          */
 
         return result;
+    }
+
+    public List<OrderQueryDto> findAllByDto_optimized() {
+        List<OrderQueryDto> orders = findOrders();
+
+        List<Long> orderIds = orders.stream().map(OrderQueryDto::getOrderId).collect(Collectors.toList());
+
+        List<OrderItemQueryDto> orderItems = em.createQuery(
+                "select new jpabook.jpashop.repository.order.query.OrderItemQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count)" +
+                        " from OrderItem oi" +
+                        " join oi.item i" +
+                        " where oi.order.id in :orderIds",
+                OrderItemQueryDto.class
+        ).setParameter("orderIds", orderIds).getResultList();
+
+        Map<Long, List<OrderItemQueryDto>> orderItemMap = orderItems.stream()
+                .collect(Collectors.groupingBy(OrderItemQueryDto::getOrderId));
+
+        orders.forEach(order ->
+            order.setOrderItems(orderItemMap.get(order.getOrderId()))
+        );
+
+        return orders;
     }
 
     private List<OrderItemQueryDto> findOrderItems(Long orderId) {
