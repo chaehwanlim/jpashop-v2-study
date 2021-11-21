@@ -139,5 +139,19 @@ public class OrderRepository {
                 Order.class
         ).getResultList();
     }
+
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        /*
+         * 1 + n + m의 쿼리 발생이 1 + 1 + 1의 쿼리 발생으로 끝남
+         * orderItem, item을 in 절로 한꺼번에 가져옴
+         */
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+    }
 }
 

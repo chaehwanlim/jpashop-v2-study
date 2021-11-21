@@ -30,6 +30,7 @@ public class Order {
     private Member member;
 
     @JsonIgnore
+    @BatchSize(size = 1000)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
