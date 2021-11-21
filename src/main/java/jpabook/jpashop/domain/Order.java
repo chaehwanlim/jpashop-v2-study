@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
