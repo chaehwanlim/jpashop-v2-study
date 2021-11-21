@@ -5,6 +5,7 @@ import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.repository.OrderSimpleQueryDto;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,7 +65,7 @@ public class OrderSimpleApiController {
         List<Order> orders = orderRepository.findAllWithMemberDelivery();
 
         /*
-         * 쿼리가 딱 한 번 나가지만 쿼리 내부에서 필드를 하나씩 다 찍는 게 단점
+         * 쿼리가 딱 한 번 나가지만 쿼리 내부에서 필요 없는 필드까지 모두 가져오는 게 단점
          * 개선 가능함
          */
 
@@ -73,8 +74,13 @@ public class OrderSimpleApiController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/api/v4/simple-orders")
+    public List<OrderSimpleQueryDto> ordersV4() {
+        return orderRepository.findOrderDtos();
+    }
+
     @Data
-    static class SimpleOrderDto {
+    static class SimpleOrderDto{
         private Long orderId;
         private String name;
         private LocalDateTime orderDate;
