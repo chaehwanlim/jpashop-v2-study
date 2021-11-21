@@ -115,5 +115,29 @@ public class OrderRepository {
                 OrderSimpleQueryDto.class
         ).getResultList();
     }
+
+    public List<Order> findAllWithItem() {
+        /*
+         * 문제점: Order: OrderItem 같은 경우 일대다 연관관계이기 때문에
+         * Order가 OrderItem 개수만큼 데이터가 중복되어 늘어나서 결과로 반환됨
+         *
+         * -> distinct를 추가하면..?
+         * distinct를 추가하면 실제 SQL도 distinct가 추가되지만
+         * 실제 DB는 모든 값이 정확히 일치해야 distinct 처리를 해주므로 DB 조회 결과는 일단 이전과 동일함.
+         * 하지만 JPA가 그 결과를 보고 Order가 같으면 중복 제거를 해주기 때문에 애플리케이션 레벨 결과는 중복 제거된 상태로 반환됨.
+         *
+         * 단점: !!!!!!!!!!페이징이 불가능하다!!!!!!!!! (정확히: 메모리에서 페이지네이션을 한다고 WARNING이 뜸)
+         * OOM 발생할 가능성이 높음
+         * 게다가 일대다 페치 조인이기 때문에 제대로 된 페이지네이션을 기대할 수 없음
+         */
+        return em.createQuery(
+                "select distinct o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d" +
+                        " join fetch o.orderItems oi" +
+                        " join fetch oi.item i",
+                Order.class
+        ).getResultList();
+    }
 }
 
